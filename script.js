@@ -234,17 +234,41 @@ function renderEventCard(event) {
   `;
 }
 
+function renderEventCardAsNews(event) {
+  const { month, day } = formatMonthDay(event.date);
+  return `
+    <article class="event-card fade-up">
+      <div class="event-date-block">
+        <span class="event-month">${month}</span>
+        <span class="event-day">${day}</span>
+      </div>
+      <div class="event-content">
+        <div class="event-top">
+          <h3 class="event-name">${event.name}</h3>
+          <span class="event-type">${event.type}</span>
+        </div>
+        <div class="event-time">⏰ ${event.time}</div>
+        <p class="event-description">${event.description}</p>
+        <div class="mt-auto">
+          <a href="#/news/${event.id}" class="event-link">Read More →</a>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 // ============================================================
 //  NAVBAR
 // ============================================================
 function renderNavbar(currentRoute) {
-  const links = [
-    { name: 'Home',   path: '/' },
-    { name: 'About',  path: '/about' },
-    { name: 'Shop',   path: '/shop' },
-    { name: 'News',   path: '/news' },
-    { name: 'Events', path: '/events' },
-  ];
+const shopifyUrl = 'https://hobby-goblin-games.myshopify.com';
+
+const links = [
+  { name: 'Home',  path: '/' },
+  { name: 'About', path: '/about' },
+  { name: 'Shop',  external: true, url: shopifyUrl },
+  { name: 'News',  path: '/news' },
+];
 
   return `
     <header id="site-header" class="site-header">
@@ -255,11 +279,21 @@ function renderNavbar(currentRoute) {
           </a>
 
           <nav class="desktop-nav">
-            ${links.map(link => `
-              <a href="#${link.path}" class="nav-link ${isActive(link.path, currentRoute) ? 'active' : ''}">
-                ${link.name}
-              </a>
-            `).join('')}
+            ${links.map(link => {
+              if (link.external) {
+                return `
+                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="nav-link">
+                    ${link.name}
+                  </a>
+                `;
+              }
+
+              return `
+                <a href="#${link.path}" class="nav-link ${isActive(link.path, currentRoute) ? 'active' : ''}">
+                  ${link.name}
+                </a>
+              `;
+            }).join('')}
           </nav>
 
           <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -270,11 +304,21 @@ function renderNavbar(currentRoute) {
 
       <div class="mobile-nav ${mobileMenuOpen ? 'open' : ''}">
         <div class="mobile-nav-inner">
-          ${links.map(link => `
-            <a href="#${link.path}" class="${isActive(link.path, currentRoute) ? 'active' : ''}">
-              ${link.name}
-            </a>
-          `).join('')}
+          ${links.map(link => {
+            if (link.external) {
+              return `
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+                  ${link.name}
+                </a>
+              `;
+            }
+
+            return `
+              <a href="#${link.path}" class="${isActive(link.path, currentRoute) ? 'active' : ''}">
+                ${link.name}
+              </a>
+            `;
+          }).join('')}
         </div>
       </div>
     </header>
@@ -304,8 +348,8 @@ function renderFooter() {
           <div>
             <h3 class="footer-heading">Quick Links</h3>
             <ul class="footer-links">
-              <li><a href="#/shop">The Shop</a></li>
-              <li><a href="#/events">Upcoming Events</a></li>
+              <li><a href="https://hobby-goblin-games.myshopify.com" target="_blank" rel="noopener noreferrer">The Shop</a></li>
+              <li><a href="#/news">News</a></li>
               <li><a href="#/about">Our Story</a></li>
               <li><a href="#/contact">Contact Us</a></li>
             </ul>
@@ -314,10 +358,8 @@ function renderFooter() {
           <div>
             <h3 class="footer-heading">Visit the Tavern</h3>
             <ul class="footer-contact">
-              <li>📍 1024 Dragon's Breath Alley<br>Waterdeep, WD 90210</li>
-              <li>🕒 Tue - Sun: 12:00 PM - 10:00 PM</li>
-              <li>📞 (555) 019-8372</li>
-              <li>✉️ greetings@hobbygoblin.com</li>
+              <li>📞 (210)596-3366</li>
+              <li>✉️ hobbygoblingamesrpg@gmail.com</li>
             </ul>
           </div>
         </div>
@@ -365,7 +407,7 @@ function renderHeroSection() {
         <h2 class="hero-event-title">${spotlight.name}</h2>
         <div class="hero-event-time">${spotlight.time}</div>
         <p class="hero-event-desc">${spotlight.description}</p>
-        <a href="#/events/${spotlight.id}" class="hero-explore-btn">Explore</a>
+        <a href="#/news/${spotlight.id}" class="hero-explore-btn">Explore</a>
         <div class="hero-event-sparkle-bl">✦</div>
       </div>
 
@@ -434,7 +476,9 @@ function renderHomePage() {
               ${featuredProducts.map(renderProductCard).join('')}
             </div>
             <div class="mt-12 text-center">
-              ${glowButton('View All Wares', { href: '/shop', variant: 'secondary' })}
+              <a href="https://hobby-goblin-games.myshopify.com" target="_blank" rel="noopener noreferrer" class="glow-btn secondary">
+                    <span>Visit Shop</span>
+              </a>
             </div>
           </section>
 
@@ -447,10 +491,10 @@ function renderHomePage() {
               veteran or a curious newcomer, there's a seat at our table.
             </p>
             <div class="event-grid three-col">
-              ${upcomingEvents.map(renderEventCard).join('')}
+              ${upcomingEvents.map(renderEventCardAsNews).join('')}
             </div>
             <div class="mt-12 text-center">
-              ${glowButton('See Full Calendar', { href: '/events', variant: 'secondary' })}
+              ${glowButton('See All News', { href: '/news', variant: 'secondary' })}
             </div>
           </section>
         </div>
@@ -523,60 +567,70 @@ function renderProductPage(id) {
   `;
 }
 
-function renderEventsPage() {
+function renderNewsPage() {
   return `
     <section class="section-padding">
       <div class="container">
         <div class="page-intro">
-          <h1>Tavern Gatherings</h1>
-          <p>Join our community for epic campaigns, fierce tournaments, and casual game nights. There's always a seat open at our tables.</p>
+          <h1>News</h1>
+          <p>Stay updated with store announcements, upcoming events, tournaments, workshops, and community happenings.</p>
         </div>
         <div class="event-grid two-col">
-          ${events.map(renderEventCard).join('')}
+          ${events.map(renderEventCardAsNews).join('')}
         </div>
       </div>
     </section>
   `;
 }
 
-function renderEventDetailPage(id) {
+function renderNewsDetailPage(id) {
   const event = events.find(e => e.id === id);
   if (!event) {
-    return `<div class="not-found"><div><h1>Event Not Found</h1><p>This gathering has faded into myth.</p>${glowButton('View All Events', { href: '/events' })}</div></div>`;
+    return `<div class="not-found"><div><h1>Post Not Found</h1><p>This news update has faded into myth.</p>${glowButton('View All News', { href: '/news' })}</div></div>`;
   }
 
   const fullDate = formatFullDate(event.date);
+
   return `
     <section class="section-padding">
       <div class="container-narrow">
         <nav class="breadcrumbs">
-          <a href="#/events">Events</a><span>›</span>
+          <a href="#/news">News</a><span>›</span>
           <span class="current">${event.name}</span>
         </nav>
+
         <article class="event-detail-card fade-up">
           <div class="event-detail-header">
             <div class="event-badge">${event.type}</div>
             <h1 class="event-title-detail">${event.name}</h1>
           </div>
+
           <div style="padding:2rem;">
             <div class="event-detail-meta" style="margin-bottom:2rem;">
               <div class="meta-card">
                 <div class="meta-icon">📅</div>
-                <div><div class="meta-title">Date</div><div class="meta-text">${fullDate}</div></div>
+                <div>
+                  <div class="meta-title">Date</div>
+                  <div class="meta-text">${fullDate}</div>
+                </div>
               </div>
-              <div class="reserve-box">
-                <h3 class="font-heading">👥 Gather Your Party</h3>
-                <p class="meta-text" style="margin-bottom:1rem;">Space is limited in the tavern. Secure your spot at the table before it fills up!</p>
-                ${glowButton('Join / Attend', { id: 'attend-btn', className: 'w-full' })}
-              </div>
+
               <div class="meta-card">
                 <div class="meta-icon">⏰</div>
-                <div><div class="meta-title">Time</div><div class="meta-text">${event.time}</div></div>
+                <div>
+                  <div class="meta-title">Time</div>
+                  <div class="meta-text">${event.time}</div>
+                </div>
               </div>
             </div>
+
             <div>
-              <h2 class="font-display" style="font-size:2rem;margin-bottom:1rem;border-bottom:1px solid rgba(140,84,121,0.3);padding-bottom:0.5rem;">About This Event</h2>
-              <p style="font-size:1.15rem;line-height:1.75;color:var(--plum-mid);">${event.description}</p>
+              <h2 class="font-display" style="font-size:2rem;margin-bottom:1rem;border-bottom:1px solid rgba(140,84,121,0.3);padding-bottom:0.5rem;">
+                Details
+              </h2>
+              <p style="font-size:1.15rem;line-height:1.75;color:var(--plum-mid);">
+                ${event.description}
+              </p>
             </div>
           </div>
         </article>
@@ -710,20 +764,12 @@ function renderContactPage() {
           <div class="contact-card fade-up">
             <h2 class="font-display" style="font-size:2rem;margin-bottom:2rem;">The Guildhall</h2>
             <div class="contact-item">
-              <div class="contact-icon">📍</div>
-              <div><h3>Location</h3><p>1024 Dragon's Breath Alley<br>Waterdeep, WD 90210<br>(Next to the Leaky Cauldron)</p></div>
-            </div>
-            <div class="contact-item">
-              <div class="contact-icon">🕒</div>
-              <div><h3>Trading Hours</h3><p>Monday: Closed (Resting)<br>Tue – Thu: 12:00 PM – 10:00 PM<br>Fri – Sat: 12:00 PM – 12:00 AM<br>Sunday: 12:00 PM – 8:00 PM</p></div>
-            </div>
-            <div class="contact-item">
               <div class="contact-icon">📞</div>
-              <div><h3>Speaking Stone</h3><p>(555) 019-8372</p></div>
+              <div><h3>Speaking Stone</h3><p>(210)596-3366</p></div>
             </div>
             <div class="contact-item" style="margin-bottom:0;">
               <div class="contact-icon">✉️</div>
-              <div><h3>Electronic Missives</h3><p>greetings@hobbygoblin.com</p></div>
+              <div><h3>Electronic Missives</h3><p>hobbygoblingamesrpg@gmail.com</p></div>
             </div>
           </div>
 
@@ -774,7 +820,7 @@ function renderAnnouncementPopup() {
           <h2 class="popup-title">Friday Night Campaign</h2>
           <p class="popup-text">A new adventure begins! Join our ongoing beginner-friendly RPG campaign. Pre-generated characters available.</p>
           <div class="popup-actions">
-            <a href="#/events/e1" class="glow-btn primary" id="popup-learn-more">Learn More</a>
+            <a href="#/news/e1" class="glow-btn primary" id="popup-learn-more">Learn More</a>
             <button class="dismiss-btn" id="popup-dismiss">Dismiss</button>
           </div>
         </div>
@@ -797,13 +843,11 @@ function renderAnnouncementPopup() {
 //  ROUTER
 // ============================================================
 function renderPage(route) {
-  if (route === '/')                    return renderHomePage();
-  if (route === '/shop')                return renderShopPage();
-  if (route.startsWith('/shop/'))       return renderProductPage(route.split('/')[2]);
-  if (route === '/events')              return renderEventsPage();
-  if (route.startsWith('/events/'))     return renderEventDetailPage(route.split('/')[2]);
-  if (route === '/about')               return renderAboutPage();
-  if (route === '/contact')             return renderContactPage();
+  if (route === '/')                return renderHomePage();
+  if (route === '/news')            return renderNewsPage();
+  if (route.startsWith('/news/'))   return renderNewsDetailPage(route.split('/')[2]);
+  if (route === '/about')           return renderAboutPage();
+  if (route === '/contact')         return renderContactPage();
   return renderNotFoundPage();
 }
 
