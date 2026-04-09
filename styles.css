@@ -373,17 +373,17 @@ main {
 
 /* Per-slide fine-tuning so each character's face/upper body stays visible */
 .hero-slide-1 {
-  background-image: url('Pic/hero-1.jpg');
+  background-image: url('Pic/hero-1.png');
   background-position: 58% top;
 }
 
 .hero-slide-2 {
-  background-image: url('Pic/hero-2.jpg');
+  background-image: url('Pic/hero-2.png');
   background-position: center top;
 }
 
 .hero-slide-3 {
-  background-image: url('Pic/hero-3.jpg');
+  background-image: url('Pic/hero-3.png');
   background-position: center top;
 }
 
