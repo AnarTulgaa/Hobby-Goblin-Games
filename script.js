@@ -126,9 +126,53 @@ const categories = ['All', 'Board Games', 'RPG Books', 'Miniatures', 'Accessorie
 
 let activeCategory = 'All';
 let mobileMenuOpen = false;
+let isAdminLoggedIn = false;
 
 const app = document.getElementById('app');
 const announcementRoot = document.getElementById('announcement-root');
+
+// ============================================================
+//  ADMIN SYSTEM
+// ============================================================
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'hoblingoblin2024'
+};
+
+function loadEventsFromStorage() {
+  const stored = localStorage.getItem('hobbyGoblinEvents');
+  return stored ? JSON.parse(stored) : events;
+}
+
+function saveEventsToStorage(eventsList) {
+  localStorage.setItem('hobbyGoblinEvents', JSON.stringify(eventsList));
+}
+
+function checkAdminLogin() {
+  const stored = sessionStorage.getItem('adminLoggedIn');
+  isAdminLoggedIn = stored === 'true';
+}
+
+function adminLogin(username, password) {
+  if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+    sessionStorage.setItem('adminLoggedIn', 'true');
+    isAdminLoggedIn = true;
+    return true;
+  }
+  return false;
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('adminLoggedIn');
+  isAdminLoggedIn = false;
+}
+
+// Initialize events from storage on load
+checkAdminLogin();
+const storedEvents = loadEventsFromStorage();
+if (storedEvents.length > 0) {
+  events.splice(0, events.length, ...storedEvents);
+}
 
 // ============================================================
 //  ROUTING
@@ -224,7 +268,7 @@ function renderEventCard(event) {
           <h3 class="event-name">${event.name}</h3>
           <span class="event-type">${event.type}</span>
         </div>
-        <div class="event-time">⏰ ${event.time}</div>
+        <div class="event-time"> ${event.time}</div>
         <p class="event-description">${event.description}</p>
         <div class="mt-auto">
           <a href="#/events/${event.id}" class="event-link">View Details →</a>
@@ -247,7 +291,7 @@ function renderEventCardAsNews(event) {
           <h3 class="event-name">${event.name}</h3>
           <span class="event-type">${event.type}</span>
         </div>
-        <div class="event-time">⏰ ${event.time}</div>
+        <div class="event-time">${event.time}</div>
         <p class="event-description">${event.description}</p>
         <div class="mt-auto">
           <a href="#/news/${event.id}" class="event-link">Read More →</a>
@@ -340,8 +384,7 @@ function renderFooter() {
           </a>
             </div>
             <p class="footer-copy">
-              Your sanctuary for tabletop adventures, rare miniatures, and epic
-              campaigns. Gather your party and step inside.
+              A place for you to experience your D&D game with community and creativity first. Come on in and join the Horde.
             </p>
           </div>
 
@@ -356,10 +399,10 @@ function renderFooter() {
           </div>
 
           <div>
-            <h3 class="footer-heading">Visit the Tavern</h3>
+            <h3 class="footer-heading">Holler The Horde</h3>
             <ul class="footer-contact">
-              <li>📞 (210)596-3366</li>
-              <li>✉️ hobbygoblingamesrpg@gmail.com</li>
+              <li>(210)596-3366</li>
+              <li>hobbygoblingamesrpg@gmail.com</li>
             </ul>
           </div>
         </div>
@@ -467,10 +510,9 @@ function renderHomePage() {
       <section class="section-padding">
         <div class="container">
           <section class="mb-12 fade-up">
-            <h2 class="section-title">Wares of Wonder</h2>
+            <h2 class="section-title">Gather Your Gear!</h2>
             <p class="section-subtitle">
-              Discover our most sought-after treasures, from ancient rulebooks
-              to finely crafted miniatures.
+              Take a look at exclusive goblin gear and quests for your campaign!
             </p>
             <div class="product-grid">
               ${featuredProducts.map(renderProductCard).join('')}
@@ -485,10 +527,9 @@ function renderHomePage() {
           ${fancyDivider()}
 
           <section class="mt-12 fade-up">
-            <h2 class="section-title">Gatherings & Quests</h2>
+            <h2 class="section-title">Upcoming Quests!</h2>
             <p class="section-subtitle">
-              Join fellow adventurers in our tavern. Whether you're a seasoned
-              veteran or a curious newcomer, there's a seat at our table.
+              Join the Horde on our upcoming quests in the mystic realms. Whether you’re a beginner or an experienced hero, we can’t wait to welcome you into the Horde!
             </p>
             <div class="event-grid three-col">
               ${upcomingEvents.map(renderEventCardAsNews).join('')}
@@ -573,7 +614,7 @@ function renderNewsPage() {
       <div class="container">
         <div class="page-intro">
           <h1>News</h1>
-          <p>Stay updated with store announcements, upcoming events, tournaments, workshops, and community happenings.</p>
+          <p>Stay updated for new quests, products, workshops, and events coming up for the Horde!</p>
         </div>
         <div class="event-grid two-col">
           ${events.map(renderEventCardAsNews).join('')}
@@ -616,7 +657,7 @@ function renderNewsDetailPage(id) {
               </div>
 
               <div class="meta-card">
-                <div class="meta-icon">⏰</div>
+                <div class="meta-icon"></div>
                 <div>
                   <div class="meta-title">Time</div>
                   <div class="meta-text">${event.time}</div>
@@ -658,19 +699,18 @@ function renderAboutPage() {
       <div class="container about-page-inner">
         <!-- top intro -->
         <div class="about-top-section fade-up">
-          <h1 class="about-main-title">Our Philosophy</h1>
+          <h1 class="about-main-title">Our Tenets</h1>
 
           <p class="about-philosophy-text">
-            We believe in the magic of face-to-face connection. In an increasingly
-            digital age, the tactile joy of rolling a natural 20, the tension of
-            drawing the final card, and the shared laughter over a brilliant
-            (or disastrous) strategy are treasures worth protecting.
+            At Hobby Goblin Games, we believe games are based played with a strong community. As the Horde,
+            we strive to create spaces where community can flourish for the TTRPG community. We create content
+            that is narrative, community, and creatively-driven.
           </p>
 
           <p class="about-philosophy-text">
-            Our tavern tables are always free to use. Our staff are guides, not just
-            clerks. We invite you to gather your party, pull up a chair, and stay
-            awhile. The next great adventure is waiting.
+            As a team, we believe that art and stories are made best by real people in our community. As such, we
+            can assure that all of our products are entirely goblin-made, and do not use Generative AI. Our artists
+            are a core part of our community, and we couldn’t do this without them!
           </p>
         </div>
 
@@ -685,24 +725,26 @@ function renderAboutPage() {
             <div class="about-card-frame">
               <h2 class="about-card-title">Our Tale</h2>
 
+              <p class="about-card-text">
+                  Hobby Goblin Games is the happy product of two nerds whose ambitious designs and plethora of innovative tactics and tools became too fun not 
+                  to share. With the goal to empower DMs and players alike as they embark on their latest adventures, Hobby Goblin Games offers a world of unique
+                  possibilitiesto enhance your D&D experience.
+              </p>
+
+              <p class="about-card-text">
+                  The founders are experienced GMs whose passion for their craft comes through in each subclass, lineage, world, and monster.  
+                  Each new possibility they create has been drafted, tested, and perfected to become the makings of unique, balanced, and---most 
+                  importantly---fun role playing experiences for fans of both 5e and 5.5e.
+              </p>
+
               <p class="about-card-quote">
-                In the heart of the realm, where the cobblestones end and the imagination begins...
+                Since our founding in 2023, we have attended a half dozen conventions with plans for more, including Dragonsteel Nexus, 
+                The Dead Wars, and Storycon (Find us at our next convention by keeping an eye on the News page!). We have partnered with 
+                amazing creators throughout the industry, and we are so excited to continue our journey of innovation and invention with you!
               </p>
 
-              <p class="about-card-text">
-                Hobby Goblin Games was forged in 2020 by a small fellowship of
-                adventurers who believed that the best stories aren't watched on a
-                screen, but created around a table. What started as a modest
-                collection of dice and rulebooks in a dusty basement has grown into
-                the sanctuary you see today.
-              </p>
-
-              <p class="about-card-text">
-                We are more than just merchants of cardboard and plastic. We are
-                curators of worlds. Whether you are a seasoned Dungeon Master
-                seeking the perfect miniature for your campaign's climax, or a weary
-                traveler looking for a casual board game to share with family, our
-                doors are open to you.
+              <p class="about-card-quote">
+                Join the Horde!
               </p>
 
               <div class="about-card-divider">
@@ -720,20 +762,38 @@ function renderAboutPage() {
 
           <div class="about-team-grid">
             <div class="team-member-card">
-              <div class="team-member-image">INSERT IMAGE</div>
-              <h3>John Smith</h3>
+              <div class="team-member-image">
+            <img src="Pic/Tyson.jpg" alt="Tyson" />
+              </div>
+              <h3>Tyson</h3>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et
+                As co-founder of Hobby Goblin Games, Tyson has made it his job to get lost in fantasy worlds and bring back stories and treasures. He loves storytelling, crafting, and learning new skills, as well as his wife and two cats. 
+              </p>
+            </div>
+
+            <div class="team-member-card">
+              <div class="team-member-image">
+            <img src="Pic/LaRea.png" alt="LaRea" />
+              </div>
+              <h3>LaRea</h3>
+              <p>
+                LaRea loves to immerse herself in other worlds, and as the chief editor for Hobby Goblin Games, she has the privileged to do just that. A mother, editor, writer, and full-time nerd, she is happy to dive into written adventures and make them shine.
               </p>
             </div>
 
             <div class="team-member-card">
               <div class="team-member-image">INSERT IMAGE</div>
-              <h3>John Smith</h3>
+              <h3>Lucas Williams</h3>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et
+                Lucas Williams is a designer for and founding member of Hobby Goblin Games. He's played and ran a lot of D&D games over the years, but also has a background in dog care and audio engineering. He enjoys explosions, the supernatural, obsessing over his cats, and coming up with nicknames for dogs that don't belong to him.
+              </p>
+            </div>
+
+            <div class="team-member-card">
+              <div class="team-member-image">INSERT IMAGE</div>
+              <h3>Samuel P. Ericksen</h3>
+              <p>
+                Samuel P. Ericksen is a designer for and co-founder of Hobby Goblin Games. He is a forever DM (by choice), real-life bard, writer, and family man. It’s really easy to get him to ramble about music theory, niche video game lore, and animation.
               </p>
             </div>
 
@@ -764,11 +824,11 @@ function renderContactPage() {
           <div class="contact-card fade-up">
             <h2 class="font-display" style="font-size:2rem;margin-bottom:2rem;">The Guildhall</h2>
             <div class="contact-item">
-              <div class="contact-icon">📞</div>
+              <div class="contact-icon"></div>
               <div><h3>Speaking Stone</h3><p>(210)596-3366</p></div>
             </div>
             <div class="contact-item" style="margin-bottom:0;">
-              <div class="contact-icon">✉️</div>
+              <div class="contact-icon"></div>
               <div><h3>Electronic Missives</h3><p>hobbygoblingamesrpg@gmail.com</p></div>
             </div>
           </div>
@@ -799,6 +859,154 @@ function renderContactPage() {
 
 function renderNotFoundPage() {
   return `<div class="not-found"><div><h1>Page Not Found</h1><p>The path you seek has vanished into the mist.</p>${glowButton('Return Home', { href: '/' })}</div></div>`;
+}
+
+// ============================================================
+//  ADMIN PAGES
+// ============================================================
+function renderAdminLoginPage() {
+  return `
+    <section class="section-padding">
+      <div class="container-narrow">
+        <div class="admin-login-card fade-up">
+          <h1 class="admin-title">Admin Portal</h1>
+          <p class="admin-subtitle">Enter your credentials to access the control chamber</p>
+          
+          <form id="admin-login-form" class="admin-form">
+            <div class="form-group">
+              <label for="admin-username">Username</label>
+              <input id="admin-username" type="text" placeholder="Enter username" required />
+            </div>
+            <div class="form-group">
+              <label for="admin-password">Password</label>
+              <input id="admin-password" type="password" placeholder="Enter password" required />
+            </div>
+            <div id="admin-error" class="admin-error" style="display:none;"></div>
+            ${glowButton('Access Portal', { type: 'submit', className: 'w-full' })}
+          </form>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderAdminDashboard() {
+  const currentEvents = loadEventsFromStorage();
+  
+  return `
+    <section class="section-padding">
+      <div class="container">
+        <div class="admin-header">
+          <h1 class="admin-title">Admin Dashboard</h1>
+          <button id="admin-logout-btn" class="glow-btn secondary">Logout</button>
+        </div>
+
+        <div class="admin-tabs">
+          <button class="admin-tab-btn active" data-tab="manage">Manage Events</button>
+          <button class="admin-tab-btn" data-tab="add">Add New Event</button>
+        </div>
+
+        <!-- Manage Events Tab -->
+        <div id="manage-tab" class="admin-tab-content active">
+          <h2>Current Events</h2>
+          <div class="admin-events-list">
+            ${currentEvents.map(event => `
+              <div class="admin-event-item">
+                <div class="admin-event-info">
+                  <h3>${event.name}</h3>
+                  <p><strong>Date:</strong> ${event.date}</p>
+                  <p><strong>Time:</strong> ${event.time}</p>
+                  <p><strong>Type:</strong> ${event.type}</p>
+                  <p><strong>Description:</strong> ${event.description}</p>
+                </div>
+                <div class="admin-event-actions">
+                  <button class="admin-edit-btn" data-event-id="${event.id}">Edit</button>
+                  <button class="admin-delete-btn" data-event-id="${event.id}">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Add Event Tab -->
+        <div id="add-tab" class="admin-tab-content">
+          <h2>Add New Event</h2>
+          <form id="admin-event-form" class="admin-form">
+            <div class="form-group">
+              <label for="event-name">Event Name</label>
+              <input id="event-name" type="text" placeholder="Enter event name" required />
+            </div>
+            <div class="form-group">
+              <label for="event-date">Date</label>
+              <input id="event-date" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="event-time">Time</label>
+              <input id="event-time" type="text" placeholder="e.g., 6:00 PM - 10:00 PM" required />
+            </div>
+            <div class="form-group">
+              <label for="event-type">Type</label>
+              <select id="event-type" required>
+                <option value="">Select type</option>
+                <option value="RPG">RPG</option>
+                <option value="Workshop">Workshop</option>
+                <option value="Tournament">Tournament</option>
+                <option value="Casual">Casual</option>
+                <option value="Showcase">Showcase</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="event-description">Description</label>
+              <textarea id="event-description" rows="5" placeholder="Enter event description" required></textarea>
+            </div>
+            <div id="form-message" class="admin-message" style="display:none;"></div>
+            ${glowButton('Create Event', { type: 'submit', className: 'w-full' })}
+          </form>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="edit-modal" class="admin-modal" style="display:none;">
+          <div class="admin-modal-content">
+            <button id="modal-close" class="modal-close">✕</button>
+            <h2>Edit Event</h2>
+            <form id="admin-edit-form" class="admin-form">
+              <input type="hidden" id="edit-event-id" />
+              <div class="form-group">
+                <label for="edit-event-name">Event Name</label>
+                <input id="edit-event-name" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="edit-event-date">Date</label>
+                <input id="edit-event-date" type="date" required />
+              </div>
+              <div class="form-group">
+                <label for="edit-event-time">Time</label>
+                <input id="edit-event-time" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="edit-event-type">Type</label>
+                <select id="edit-event-type" required>
+                  <option value="RPG">RPG</option>
+                  <option value="Workshop">Workshop</option>
+                  <option value="Tournament">Tournament</option>
+                  <option value="Casual">Casual</option>
+                  <option value="Showcase">Showcase</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="edit-event-description">Description</label>
+                <textarea id="edit-event-description" rows="5" required></textarea>
+              </div>
+              <div class="form-buttons">
+                ${glowButton('Save Changes', { type: 'submit', className: 'w-full' })}
+                <button type="button" id="cancel-edit" class="glow-btn secondary w-full">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 // ============================================================
@@ -843,6 +1051,10 @@ function renderAnnouncementPopup() {
 //  ROUTER
 // ============================================================
 function renderPage(route) {
+  if (route === '/admin/login') return renderAdminLoginPage();
+  if (route === '/admin' && isAdminLoggedIn) return renderAdminDashboard();
+  if (route === '/admin' && !isAdminLoggedIn) return renderAdminLoginPage();
+  
   if (route === '/')                return renderHomePage();
   if (route === '/news')            return renderNewsPage();
   if (route.startsWith('/news/'))   return renderNewsDetailPage(route.split('/')[2]);
@@ -856,20 +1068,23 @@ function renderPage(route) {
 // ============================================================
 function renderApp() {
   const route = getRoute();
+  const isAdminPage = route.startsWith('/admin');
 
   app.innerHTML = `
     <div class="app-shell">
-      ${renderNavbar(route)}
+      ${!isAdminPage ? renderNavbar(route) : ''}
       <main>
         ${renderPage(route)}
       </main>
-      ${renderFooter()}
+      ${!isAdminPage ? renderFooter() : ''}
     </div>
   `;
 
   attachEvents();
-  updateScrolledNavbar();
-  initHeroSlideshow(); // start slideshow whenever app re-renders on home
+  if (!isAdminPage) {
+    updateScrolledNavbar();
+    initHeroSlideshow();
+  }
 }
 
 // ============================================================
@@ -930,6 +1145,159 @@ function attachEvents() {
       contactForm.reset();
     });
   }
+
+  // ============================================================
+  //  ADMIN EVENT HANDLERS
+  // ============================================================
+  
+  // Admin Login
+  const adminLoginForm = document.getElementById('admin-login-form');
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('admin-username').value;
+      const password = document.getElementById('admin-password').value;
+      
+      if (adminLogin(username, password)) {
+        navigate('/admin');
+      } else {
+        const errorDiv = document.getElementById('admin-error');
+        errorDiv.textContent = 'Invalid username or password';
+        errorDiv.style.display = 'block';
+      }
+    });
+  }
+
+  // Admin Logout
+  const logoutBtn = document.getElementById('admin-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      adminLogout();
+      navigate('/');
+    });
+  }
+
+  // Admin Tab Navigation
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`${tab}-tab`).classList.add('active');
+    });
+  });
+
+  // Add Event Form
+  const eventForm = document.getElementById('admin-event-form');
+  if (eventForm) {
+    eventForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newEvent = {
+        id: 'e' + (loadEventsFromStorage().length + 1),
+        name: document.getElementById('event-name').value,
+        date: document.getElementById('event-date').value,
+        time: document.getElementById('event-time').value,
+        type: document.getElementById('event-type').value,
+        description: document.getElementById('event-description').value
+      };
+
+      const currentEvents = loadEventsFromStorage();
+      currentEvents.push(newEvent);
+      saveEventsToStorage(currentEvents);
+      events.splice(0, events.length, ...currentEvents);
+
+      const msgDiv = document.getElementById('form-message');
+      msgDiv.textContent = 'Event created successfully!';
+      msgDiv.style.display = 'block';
+      msgDiv.style.color = '#90EE90';
+      
+      eventForm.reset();
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+      }, 3000);
+    });
+  }
+
+  // Edit Event Buttons
+  document.querySelectorAll('.admin-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const eventId = btn.dataset.eventId;
+      const eventToEdit = loadEventsFromStorage().find(e => e.id === eventId);
+      
+      if (eventToEdit) {
+        document.getElementById('edit-event-id').value = eventToEdit.id;
+        document.getElementById('edit-event-name').value = eventToEdit.name;
+        document.getElementById('edit-event-date').value = eventToEdit.date;
+        document.getElementById('edit-event-time').value = eventToEdit.time;
+        document.getElementById('edit-event-type').value = eventToEdit.type;
+        document.getElementById('edit-event-description').value = eventToEdit.description;
+        
+        document.getElementById('edit-modal').style.display = 'flex';
+      }
+    });
+  });
+
+  // Close Edit Modal
+  const modalClose = document.getElementById('modal-close');
+  if (modalClose) {
+    modalClose.addEventListener('click', () => {
+      document.getElementById('edit-modal').style.display = 'none';
+    });
+  }
+
+  const cancelEdit = document.getElementById('cancel-edit');
+  if (cancelEdit) {
+    cancelEdit.addEventListener('click', () => {
+      document.getElementById('edit-modal').style.display = 'none';
+    });
+  }
+
+  // Save Edit Form
+  const editForm = document.getElementById('admin-edit-form');
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const eventId = document.getElementById('edit-event-id').value;
+      const currentEvents = loadEventsFromStorage();
+      const eventIndex = currentEvents.findIndex(e => e.id === eventId);
+
+      if (eventIndex !== -1) {
+        currentEvents[eventIndex] = {
+          id: eventId,
+          name: document.getElementById('edit-event-name').value,
+          date: document.getElementById('edit-event-date').value,
+          time: document.getElementById('edit-event-time').value,
+          type: document.getElementById('edit-event-type').value,
+          description: document.getElementById('edit-event-description').value
+        };
+
+        saveEventsToStorage(currentEvents);
+        events.splice(0, events.length, ...currentEvents);
+        
+        document.getElementById('edit-modal').style.display = 'none';
+        renderApp();
+      }
+    });
+  }
+
+  // Delete Event Buttons
+  document.querySelectorAll('.admin-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const eventId = btn.dataset.eventId;
+      
+      if (confirm('Are you sure you want to delete this event?')) {
+        const currentEvents = loadEventsFromStorage();
+        const updatedEvents = currentEvents.filter(e => e.id !== eventId);
+        saveEventsToStorage(updatedEvents);
+        events.splice(0, events.length, ...updatedEvents);
+        
+        renderApp();
+      }
+    });
+  });
 }
 
 function updateScrolledNavbar() {
