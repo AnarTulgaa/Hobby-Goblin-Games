@@ -797,14 +797,6 @@ function renderAboutPage() {
               </p>
             </div>
 
-            <div class="team-member-card">
-              <div class="team-member-image">INSERT IMAGE</div>
-              <h3>John Smith</h3>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -1024,7 +1016,7 @@ function renderAnnouncementPopup() {
         <div class="popup-backdrop" id="popup-backdrop"></div>
         <div class="popup-card">
           <button class="popup-close" id="popup-close" aria-label="Close">✕</button>
-          <div class="popup-icon">🎲</div>
+          <div class="popup-icon"></div>
           <h2 class="popup-title">Friday Night Campaign</h2>
           <p class="popup-text">A new adventure begins! Join our ongoing beginner-friendly RPG campaign. Pre-generated characters available.</p>
           <div class="popup-actions">
@@ -1160,6 +1152,7 @@ function attachEvents() {
       
       if (adminLogin(username, password)) {
         navigate('/admin');
+        renderApp(); // ADD THIS LINE: Forces the screen to update to the dashboard
       } else {
         const errorDiv = document.getElementById('admin-error');
         errorDiv.textContent = 'Invalid username or password';
