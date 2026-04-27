@@ -912,8 +912,8 @@ function renderAdminLoginPage() {
 }
 
 function renderAdminDashboard() {
-  const currentEvents = loadEventsFromStorage();
-  
+  const currentEvents = events; // Use the global array instead of the async function
+
   return `
     <section class="section-padding">
       <div class="container">
