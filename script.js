@@ -65,7 +65,7 @@ const products = [
   },
 ];
 
-const events = [
+let events = [
   {
     id: 'e1',
     name: 'Friday Night Campaign: The Lost Mine',
