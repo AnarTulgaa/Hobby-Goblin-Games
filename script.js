@@ -1355,15 +1355,17 @@ function updateScrolledNavbar() {
 async function initializeEventsFromFirestore() {
   try {
     const snapshot = await db.collection('events').orderBy('date').get();
-    if (!snapshot.empty) {
-      events.length = 0; // Clear default events
-      snapshot.forEach(doc => {
-        events.push({ id: doc.id, ...doc.data() });
-      });
-    }
+    
+    // Completely wipe out the hardcoded demo data
+    events = []; 
+    
+    // ONLY load what is actually in your Firebase cloud database
+    snapshot.forEach(doc => {
+      events.push({ id: doc.id, ...doc.data() });
+    });
+    
   } catch (error) {
     console.error('Error loading Firestore events:', error);
-    console.log('Using default events from fallback data');
   }
 }
 
