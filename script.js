@@ -802,7 +802,7 @@ function renderAboutPage() {
               <div class="team-member-image">
             <img src="Pic/Tyson.jpg" alt="Tyson" />
               </div>
-              <h3>Tyson</h3>
+              <h3>Tyson Smith</h3>
               <p>
                 As co-founder of Hobby Goblin Games, Tyson has made it his job to get lost in fantasy worlds and bring back stories and treasures. He loves storytelling, crafting, and learning new skills, as well as his wife and two cats. 
               </p>
@@ -812,25 +812,29 @@ function renderAboutPage() {
               <div class="team-member-image">
             <img src="Pic/LaRea.png" alt="LaRea" />
               </div>
-              <h3>LaRea</h3>
+              <h3>LaRea Erickson</h3>
               <p>
                 LaRea loves to immerse herself in other worlds, and as the chief editor for Hobby Goblin Games, she has the privileged to do just that. A mother, editor, writer, and full-time nerd, she is happy to dive into written adventures and make them shine.
               </p>
             </div>
 
             <div class="team-member-card">
-              <div class="team-member-image">INSERT IMAGE</div>
+              <div class="team-member-image">
+            <img src="Pic/Lucas.jpg" alt="Lucas Williams" />
+              </div>
               <h3>Lucas Williams</h3>
-              <p>
-                Lucas Williams is a designer for and founding member of Hobby Goblin Games. He's played and ran a lot of D&D games over the years, but also has a background in dog care and audio engineering. He enjoys explosions, the supernatural, obsessing over his cats, and coming up with nicknames for dogs that don't belong to him.
+              <p> 
+                Lucas Williams is a designer for and founding member of Hobby Goblin Games. He's played and ran a lot of D&D games over the years, but also has a background in dog care and audio engineering. He enjoys explosions, the supernatural, obsessing over his cats, and coming up with nicknames for dogs that don't belong to him.              
               </p>
             </div>
 
             <div class="team-member-card">
-              <div class="team-member-image">INSERT IMAGE</div>
+              <div class="team-member-image">
+            <img src="Pic/Samuel P. Ericksen.jpg" alt="Samuel P. Ericksen" />
+              </div>
               <h3>Samuel P. Ericksen</h3>
-              <p>
-                Samuel P. Ericksen is a designer for and co-founder of Hobby Goblin Games. He is a forever DM (by choice), real-life bard, writer, and family man. It’s really easy to get him to ramble about music theory, niche video game lore, and animation.
+              <p> 
+                Samuel P. Ericksen is a designer for and co-founder of Hobby Goblin Games. He is a forever DM (by choice), real-life bard, writer, and family man. It’s really easy to get him to ramble about music theory, niche video game lore, and animation.              
               </p>
             </div>
 
