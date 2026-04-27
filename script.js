@@ -132,47 +132,76 @@ const app = document.getElementById('app');
 const announcementRoot = document.getElementById('announcement-root');
 
 // ============================================================
-//  ADMIN SYSTEM
+//  FIREBASE SETUP
 // ============================================================
-const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: 'hoblingoblin2024'
-};
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-function loadEventsFromStorage() {
-  const stored = localStorage.getItem('hobbyGoblinEvents');
-  return stored ? JSON.parse(stored) : events;
+// ============================================================
+//  ADMIN SYSTEM (FIREBASE)
+// ============================================================
+async function loadEventsFromStorage() {
+  try {
+    const snapshot = await db.collection('events').orderBy('date').get();
+    const loadedEvents = [];
+    snapshot.forEach(doc => {
+      loadedEvents.push({ id: doc.id, ...doc.data() });
+    });
+    return loadedEvents.length > 0 ? loadedEvents : events;
+  } catch (error) {
+    console.error('Error loading events:', error);
+    return events;
+  }
 }
 
-function saveEventsToStorage(eventsList) {
-  localStorage.setItem('hobbyGoblinEvents', JSON.stringify(eventsList));
+async function saveEventsToStorage(eventsList) {
+  try {
+    // Clear existing events
+    const snapshot = await db.collection('events').get();
+    snapshot.forEach(doc => {
+      db.collection('events').doc(doc.id).delete();
+    });
+    
+    // Add new events
+    for (const event of eventsList) {
+      const { id, ...eventData } = event;
+      await db.collection('events').doc(id).set(eventData);
+    }
+  } catch (error) {
+    console.error('Error saving events:', error);
+  }
 }
 
 function checkAdminLogin() {
-  const stored = sessionStorage.getItem('adminLoggedIn');
-  isAdminLoggedIn = stored === 'true';
+  auth.onAuthStateChanged(user => {
+    isAdminLoggedIn = user ? true : false;
+  });
 }
 
-function adminLogin(username, password) {
-  if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-    sessionStorage.setItem('adminLoggedIn', 'true');
-    isAdminLoggedIn = true;
-    return true;
-  }
-  return false;
+function adminLogin(email, password) {
+  return auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      isAdminLoggedIn = true;
+      return true;
+    })
+    .catch(error => {
+      console.error('Login error:', error);
+      return false;
+    });
 }
 
 function adminLogout() {
-  sessionStorage.removeItem('adminLoggedIn');
-  isAdminLoggedIn = false;
+  return auth.signOut()
+    .then(() => {
+      isAdminLoggedIn = false;
+    })
+    .catch(error => {
+      console.error('Logout error:', error);
+    });
 }
 
-// Initialize events from storage on load
+// Initialize Firebase auth listener
 checkAdminLogin();
-const storedEvents = loadEventsFromStorage();
-if (storedEvents.length > 0) {
-  events.splice(0, events.length, ...storedEvents);
-}
 
 // ============================================================
 //  ROUTING
@@ -862,12 +891,12 @@ function renderAdminLoginPage() {
       <div class="container-narrow">
         <div class="admin-login-card fade-up">
           <h1 class="admin-title">Admin Portal</h1>
-          <p class="admin-subtitle">Enter your credentials to access the control chamber</p>
+          <p class="admin-subtitle">Enter your Firebase credentials to access the control chamber</p>
           
           <form id="admin-login-form" class="admin-form">
             <div class="form-group">
-              <label for="admin-username">Username</label>
-              <input id="admin-username" type="text" placeholder="Enter username" required />
+              <label for="admin-email">Email</label>
+              <input id="admin-email" type="email" placeholder="Enter email" required />
             </div>
             <div class="form-group">
               <label for="admin-password">Password</label>
@@ -1145,17 +1174,20 @@ function attachEvents() {
   // Admin Login
   const adminLoginForm = document.getElementById('admin-login-form');
   if (adminLoginForm) {
-    adminLoginForm.addEventListener('submit', (e) => {
+    adminLoginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('admin-username').value;
+      const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
       
-      if (adminLogin(username, password)) {
-        navigate('/admin');
-        renderApp(); // ADD THIS LINE: Forces the screen to update to the dashboard
-      } else {
+      try {
+        await adminLogin(email, password);
+        if (isAdminLoggedIn) {
+          navigate('/admin');
+          renderApp();
+        }
+      } catch (error) {
         const errorDiv = document.getElementById('admin-error');
-        errorDiv.textContent = 'Invalid username or password';
+        errorDiv.textContent = error.message || 'Login failed. Check your email and password.';
         errorDiv.style.display = 'block';
       }
     });
@@ -1164,9 +1196,10 @@ function attachEvents() {
   // Admin Logout
   const logoutBtn = document.getElementById('admin-logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      adminLogout();
+    logoutBtn.addEventListener('click', async () => {
+      await adminLogout();
       navigate('/');
+      renderApp();
     });
   }
 
@@ -1184,11 +1217,10 @@ function attachEvents() {
   // Add Event Form
   const eventForm = document.getElementById('admin-event-form');
   if (eventForm) {
-    eventForm.addEventListener('submit', (e) => {
+    eventForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const newEvent = {
-        id: 'e' + (loadEventsFromStorage().length + 1),
         name: document.getElementById('event-name').value,
         date: document.getElementById('event-date').value,
         time: document.getElementById('event-time').value,
@@ -1196,28 +1228,37 @@ function attachEvents() {
         description: document.getElementById('event-description').value
       };
 
-      const currentEvents = loadEventsFromStorage();
-      currentEvents.push(newEvent);
-      saveEventsToStorage(currentEvents);
-      events.splice(0, events.length, ...currentEvents);
-
-      const msgDiv = document.getElementById('form-message');
-      msgDiv.textContent = 'Event created successfully!';
-      msgDiv.style.display = 'block';
-      msgDiv.style.color = '#90EE90';
-      
-      eventForm.reset();
-      setTimeout(() => {
-        msgDiv.style.display = 'none';
-      }, 3000);
+      try {
+        const eventId = 'e' + Date.now();
+        await db.collection('events').doc(eventId).set(newEvent);
+        
+        // Update local events array
+        events.push({ id: eventId, ...newEvent });
+        
+        const msgDiv = document.getElementById('form-message');
+        msgDiv.textContent = 'Event created successfully!';
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#90EE90';
+        
+        eventForm.reset();
+        setTimeout(() => {
+          msgDiv.style.display = 'none';
+          renderApp(); // Refresh to show new event
+        }, 2000);
+      } catch (error) {
+        const msgDiv = document.getElementById('form-message');
+        msgDiv.textContent = 'Error creating event: ' + error.message;
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#ff6b6b';
+      }
     });
   }
 
   // Edit Event Buttons
   document.querySelectorAll('.admin-edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const eventId = btn.dataset.eventId;
-      const eventToEdit = loadEventsFromStorage().find(e => e.id === eventId);
+      const eventToEdit = events.find(e => e.id === eventId);
       
       if (eventToEdit) {
         document.getElementById('edit-event-id').value = eventToEdit.id;
@@ -1250,44 +1291,51 @@ function attachEvents() {
   // Save Edit Form
   const editForm = document.getElementById('admin-edit-form');
   if (editForm) {
-    editForm.addEventListener('submit', (e) => {
+    editForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const eventId = document.getElementById('edit-event-id').value;
-      const currentEvents = loadEventsFromStorage();
-      const eventIndex = currentEvents.findIndex(e => e.id === eventId);
+      const updatedEvent = {
+        name: document.getElementById('edit-event-name').value,
+        date: document.getElementById('edit-event-date').value,
+        time: document.getElementById('edit-event-time').value,
+        type: document.getElementById('edit-event-type').value,
+        description: document.getElementById('edit-event-description').value
+      };
 
-      if (eventIndex !== -1) {
-        currentEvents[eventIndex] = {
-          id: eventId,
-          name: document.getElementById('edit-event-name').value,
-          date: document.getElementById('edit-event-date').value,
-          time: document.getElementById('edit-event-time').value,
-          type: document.getElementById('edit-event-type').value,
-          description: document.getElementById('edit-event-description').value
-        };
-
-        saveEventsToStorage(currentEvents);
-        events.splice(0, events.length, ...currentEvents);
+      try {
+        await db.collection('events').doc(eventId).update(updatedEvent);
+        
+        // Update local events array
+        const eventIndex = events.findIndex(e => e.id === eventId);
+        if (eventIndex !== -1) {
+          events[eventIndex] = { id: eventId, ...updatedEvent };
+        }
         
         document.getElementById('edit-modal').style.display = 'none';
         renderApp();
+      } catch (error) {
+        alert('Error updating event: ' + error.message);
       }
     });
   }
 
   // Delete Event Buttons
   document.querySelectorAll('.admin-delete-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const eventId = btn.dataset.eventId;
       
       if (confirm('Are you sure you want to delete this event?')) {
-        const currentEvents = loadEventsFromStorage();
-        const updatedEvents = currentEvents.filter(e => e.id !== eventId);
-        saveEventsToStorage(updatedEvents);
-        events.splice(0, events.length, ...updatedEvents);
-        
-        renderApp();
+        try {
+          await db.collection('events').doc(eventId).delete();
+          
+          // Update local events array
+          events = events.filter(e => e.id !== eventId);
+          
+          renderApp();
+        } catch (error) {
+          alert('Error deleting event: ' + error.message);
+        }
       }
     });
   });
@@ -1302,6 +1350,23 @@ function updateScrolledNavbar() {
 // ============================================================
 //  INIT
 // ============================================================
+
+// Initialize Firestore events on app startup
+async function initializeEventsFromFirestore() {
+  try {
+    const snapshot = await db.collection('events').orderBy('date').get();
+    if (!snapshot.empty) {
+      events.length = 0; // Clear default events
+      snapshot.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() });
+      });
+    }
+  } catch (error) {
+    console.error('Error loading Firestore events:', error);
+    console.log('Using default events from fallback data');
+  }
+}
+
 window.addEventListener('scroll', updateScrolledNavbar);
 
 window.addEventListener('hashchange', () => {
@@ -1309,7 +1374,8 @@ window.addEventListener('hashchange', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  await initializeEventsFromFirestore();
   renderApp();
   renderAnnouncementPopup();
 });
