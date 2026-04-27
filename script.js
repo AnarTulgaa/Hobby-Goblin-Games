@@ -448,42 +448,50 @@ function renderFooter() {
 //  CINEMATIC HERO WITH SLIDESHOW
 // ============================================================
 function renderHeroSection() {
-  const spotlight = events[0]; // Friday Night Campaign: The Lost Mine
+  // Safely check if we have any events in the database
+  const spotlight = events.length > 0 ? events[0] : null;
+
+  // Build the card HTML dynamically based on whether an event exists
+  const eventCardHTML = spotlight ? `
+    <div class="hero-event-card">
+      <div class="hero-event-sparkle">✦</div>
+      <h2 class="hero-event-title">${spotlight.name}</h2>
+      <div class="hero-event-time">${spotlight.time}</div>
+      <p class="hero-event-desc">${spotlight.description}</p>
+      <a href="#/news/${spotlight.id}" class="hero-explore-btn">Explore</a>
+      <div class="hero-event-sparkle-bl">✦</div>
+    </div>
+  ` : `
+    <div class="hero-event-card">
+      <div class="hero-event-sparkle">✦</div>
+      <h2 class="hero-event-title">Welcome to the Horde</h2>
+      <p class="hero-event-desc">The merchant's board is currently clear. Check back soon for new quests and events!</p>
+      <a href="#/news" class="hero-explore-btn">View News</a>
+      <div class="hero-event-sparkle-bl">✦</div>
+    </div>
+  `;
 
   return `
     <section class="hero-cinematic" id="hero-cinematic">
 
-      <!-- Crossfade slideshow backgrounds -->
       <div class="hero-slides" id="hero-slides">
         <div class="hero-slide hero-slide-1 active"></div>
         <div class="hero-slide hero-slide-2"></div>
         <div class="hero-slide hero-slide-3"></div>
       </div>
 
-      <!-- Gradient vignette -->
       <div class="hero-vignette"></div>
 
-      <!-- Sparkle decoration top-right -->
       <div class="hero-sparkle-tr" aria-hidden="true">✦ ✦</div>
 
-      <!-- Slide dot indicators bottom-right -->
       <div class="hero-dots" id="hero-dots">
         <div class="hero-dot active" data-slide="0"></div>
         <div class="hero-dot" data-slide="1"></div>
         <div class="hero-dot" data-slide="2"></div>
       </div>
 
-      <!-- Event spotlight card — anchored to bottom-left corner -->
-      <div class="hero-event-card">
-        <div class="hero-event-sparkle">✦</div>
-        <h2 class="hero-event-title">${spotlight.name}</h2>
-        <div class="hero-event-time">${spotlight.time}</div>
-        <p class="hero-event-desc">${spotlight.description}</p>
-        <a href="#/news/${spotlight.id}" class="hero-explore-btn">Explore</a>
-        <div class="hero-event-sparkle-bl">✦</div>
-      </div>
+      ${eventCardHTML}
 
-      <!-- Fade into page body -->
       <div class="hero-bottom-fade"></div>
     </section>
   `;
